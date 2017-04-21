@@ -13,7 +13,7 @@ class ViewController: UIViewController {
     
     var words = ["Swift", "UIView", "Layer", "Bezier", "UIKit", "Path", "Debug", "CAShape", "Darwin", "Anim", "Stack", "RxSwift", "Github", "Xcode", "Frame", "Bounds", "Core", "Cocoa", "Native", "GLKit", "Graphics", "UX/UI", "OpenGL", "Layout", "Spring", "KeyFrame", "Mask", "Stroke", "3D", "Obj-C", "Design", "iOS SDK"]
     
-    var labels : [UILabel] = [], wayBools : [Bool] = [true], randoms_1to1 : [CGFloat] = [-1.0]
+    var labels : [UIButton] = [], wayBools : [Bool] = [true], randoms_1to1 : [CGFloat] = [-1.0]
     var count = 0, difX: CGFloat = 0.0, difY: CGFloat = 0.0, kWidth: CGFloat = 0.0, kHeight : CGFloat = 0.0
     var scaleOffset: Double = 0.0, radius: Double = 0.0, randomRadius:Double = 0, min : Double = 500
     let speed:CGFloat = 0.025, scaleGap: CGFloat = 0.3, moyenneAlpha:CGFloat = 0.6
@@ -27,13 +27,16 @@ class ViewController: UIViewController {
         radius = Double(kWidth/2 - 40)
         count = words.count
         scaleOffset = Double(kWidth)-10.0
-        let spacingMinimun : Double = 73/147*radius
+        let spacingMinimun : Double = 70/147*radius
         let sizeForLabel = 80/147*radius
         
         self.view.bounds = CGRect(x: -kWidth/2, y: -kHeight/2, width: kWidth, height: kHeight)
         for i in 0..<count {
-            let label = UILabel()
-            label.text = words[i]
+            let label = UIButton()
+            //label.text = words[i]
+            label.setTitle(words[i],for: .normal)
+            label.setTitleColor(UIColor.black, for: .normal)
+            label.addTarget(self, action: #selector(buttonAction), for: .touchUpInside)
             label.frame = CGRect(x: -sizeForLabel/2, y: -sizeForLabel/2, width: sizeForLabel, height: sizeForLabel)
             if i != 0 {
                 let randomAngle = Double(i)*2*M_PI/Double(count)
@@ -59,14 +62,15 @@ class ViewController: UIViewController {
                 label.center = CGPoint(x: cos(Double(randomAngle)) * randomRadius , y: sin(Double(randomAngle)) * randomRadius)
                 wayBools.append(random_1to1 < 0)
             }
-            label.textAlignment = .center
-            label.adjustsFontSizeToFitWidth = true
+            label.contentHorizontalAlignment = .center;
+            label.contentVerticalAlignment = .center;
+            label.titleLabel?.adjustsFontSizeToFitWidth = true
             labels.append(label)
             self.view.addSubview(label)
         }
         
         let longGesture = UILongPressGestureRecognizer(target: self, action: #selector(gestureAction(_:)))
-        longGesture.minimumPressDuration = 0.0
+        longGesture.minimumPressDuration = 0.3
         self.view.addGestureRecognizer(longGesture)
         _ = Timer.scheduledTimer(timeInterval: 0.02, target: self, selector: #selector(ViewController.anim), userInfo: nil, repeats: true)
     }
@@ -74,6 +78,10 @@ class ViewController: UIViewController {
     func gestureAction(_ recognizer: UIGestureRecognizer){
         self.difX = recognizer.location(in: self.view).x
         self.difY = recognizer.location(in: self.view).y
+    }
+    
+    func buttonAction(sender:UIButton!){
+        print(sender.titleLabel?.text)
     }
     
     func anim(){
