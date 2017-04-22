@@ -5,7 +5,9 @@
 
 Animated Cloud of key words
 
-###### ++ Work in progress for more features ++
+#### ++ Work in progress for more features ++
+
+###### ( bad quality GIF )
 
 <img src="/animCloud.gif" width="300px">
 
