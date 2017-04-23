@@ -13,6 +13,8 @@ class ViewController: UIViewController {
     
     var words = ["Swift", "UIView", "Layer", "Bezier", "UIKit", "Path", "Debug", "CAShape", "Darwin", "Anim", "Stack", "RxSwift", "Github", "Xcode", "Frame", "Bounds", "Core", "Cocoa", "Native", "GLKit", "Graphics", "UX/UI", "OpenGL", "Layout", "Spring", "KeyFrame", "Mask", "Stroke", "3D", "Obj-C", "Design", "iOS SDK"]
     
+    var words2 = ["Peinture", "Art", "Design", "Brode", "Fil", "Color", "Motif", "Forme", "Star", "Seins", "Sun", "Sea", "Ocean", "Boat", "Friends", "Family", "Music", "Party", "Shot", "Dance", "Festival", "Breizh", "UB40", "Caen", "Bédée", "Marcel", "Zoé", "Eliot", "Chat", "Lapin", "Rose", "Cocon"]
+    
     var labels : [UIButton] = [], wayBools : [Bool] = [true], randoms_1to1 : [CGFloat] = [-1.0]
     var count = 0, difX: CGFloat = 0.0, difY: CGFloat = 0.0, kWidth: CGFloat = 0.0, kHeight : CGFloat = 0.0
     var scaleOffset: Double = 0.0, radius: Double = 0.0, randomRadius:Double = 0, min : Double = 500
@@ -20,7 +22,9 @@ class ViewController: UIViewController {
     var labels2 : [UIButton] = [], wayBools2 : [Bool] = [true], randoms_1to12 : [CGFloat] = [-1.0]
     
     let speed:CGFloat = 0.025, scaleGap: CGFloat = 0.3, moyenneAlpha:CGFloat = 0.6
-    var firstTime = true, firstTime2 = true, firstCloud = true, withBorder = true
+    var firstTime = true, firstTime2 = true, firstCloud = true
+    
+    var timer : Timer = Timer()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -31,7 +35,7 @@ class ViewController: UIViewController {
         count = words.count
         scaleOffset = Double(kWidth)-10.0
         
-        _ = Timer.scheduledTimer(timeInterval: 0.02, target: self, selector: #selector(ViewController.anim), userInfo: nil, repeats: true)
+        timer = Timer.scheduledTimer(timeInterval: 0.02, target: self, selector: #selector(ViewController.anim), userInfo: nil, repeats: true)
         
         self.constructPoint(inView: self.view, firstOne:true)
         
@@ -98,7 +102,7 @@ class ViewController: UIViewController {
             }
             
             //Construct the button title and target
-            label.setTitle(words[i],for: .normal)
+            label.setTitle(firstOne ? words[i] : words2[i],for: .normal)
             label.setTitleColor(UIColor.black, for: .normal)
             label.addTarget(self, action: #selector(buttonAction), for: .touchUpInside)
             label.contentHorizontalAlignment = .center;
@@ -107,12 +111,15 @@ class ViewController: UIViewController {
             
             firstOne ? labels.append(label) : labels2.append(label)
             inView.addSubview(label)
-            
         }
         
         UIView.animate(withDuration: 1, animations: {
             for i in 0..<self.count {
-                self.labels[i].center = cgpoints[i]
+                if firstOne {
+                    self.labels[i].center = cgpoints[i]
+                } else {
+                    self.labels2[i].center = cgpoints[i]
+                }
             }
         }, completion: { (finished) in
             print("end ")
@@ -120,14 +127,42 @@ class ViewController: UIViewController {
     }
     
     func splitCloud(){
-        //self.withBorder = false
+        var cgpoints : [CGPoint] = []
+        for i in 0..<count {
+            let oldX = firstCloud ? labels[i].center.x : labels2[i].center.x
+            let oldY = firstCloud ? labels[i].center.y : labels2[i].center.y
+            let oldAngle = oldY < 0 ? acos(oldX/CGFloat(radius)) + CGFloat(M_PI_2) : -acos(oldX/CGFloat(radius)) + CGFloat(M_PI_2)
+            let newX : CGFloat = cos(oldAngle)*(CGFloat(radius)+250)
+            let newY : CGFloat = sin(oldAngle)*(CGFloat(radius)+250)
+            cgpoints.append(CGPoint(x: newY, y: newX))
+        }
+        self.constructPoint(inView: self.view, firstOne:!firstCloud)
+        UIView.animate(withDuration: 2, animations: {
+            for i in 0..<self.count {
+                if !self.firstCloud {
+                    self.labels[i].center = cgpoints[i]
+                } else {
+                    self.labels2[i].center = cgpoints[i]
+                }
+            }
+        }, completion: { (finished) in
+            if !self.firstCloud {
+                self.labels = []
+                self.wayBools = [true]
+                self.randoms_1to1 = [-1.0]
+            } else {
+                self.labels2 = []
+                self.wayBools2 = [true]
+                self.randoms_1to12 = [-1.0]
+            }
+        })
     }
     
     func anim(){
         for i in 0..<count {
             var newCenter = firstCloud ? labels[i].center : labels2[i].center
             let distanceFromCenter = sqrt(Double(newCenter.x * newCenter.x + newCenter.y * newCenter.y))
-            if distanceFromCenter >= radius && self.withBorder{
+            if distanceFromCenter >= radius{
                 if(firstCloud){
                    wayBools[i] = !wayBools[i]
                     if wayBools[i] { self.view.bringSubview(toFront: labels[i])
@@ -139,16 +174,27 @@ class ViewController: UIViewController {
                 }
             }
             let nearBorder = CGFloat(sqrt(abs(radius*radius-distanceFromCenter*distanceFromCenter))/radius)
-            
-            let brake = (wayBools[i] && firstCloud) || (!firstCloud && wayBools2[i]) ? nearBorder*speed : -nearBorder*speed
+            var brake : CGFloat = 0
+            if firstCloud {
+                brake = (wayBools[i] ? nearBorder*speed : -nearBorder*speed)
+            } else {
+                brake = (wayBools2[i] ? nearBorder*speed : -nearBorder*speed)
+            }
             newCenter.x += self.difX * brake
             newCenter.y += self.difY * brake
-            let transformFactor = (wayBools[i] && firstCloud) || (!firstCloud && wayBools2[i]) ? scaleGap * abs(nearBorder) : -scaleGap * abs(nearBorder)
-            labels[i].transform = CGAffineTransform(scaleX: CGFloat(1.0)+transformFactor, y: CGFloat(1)+transformFactor)
-            let alphafactor = (wayBools[i] && firstCloud) || (!firstCloud && wayBools2[i]) ? (1-moyenneAlpha) * nearBorder : -(1-moyenneAlpha) * nearBorder
-            labels[i].alpha = moyenneAlpha + alphafactor
-            if firstCloud{ if !firstTime {labels[i].center = newCenter}}
-            if !firstCloud{ if !firstTime2 {labels2[i].center = newCenter}}
+            if firstCloud {
+                let transformFactor = wayBools[i] ? scaleGap * abs(nearBorder) : -scaleGap * abs(nearBorder)
+                labels[i].transform = CGAffineTransform(scaleX: CGFloat(1.0)+transformFactor, y: CGFloat(1)+transformFactor)
+                let alphafactor = wayBools[i] ? (1-moyenneAlpha) * nearBorder : -(1-moyenneAlpha) * nearBorder
+                labels[i].alpha = moyenneAlpha + alphafactor
+                if !firstTime {labels[i].center = newCenter}
+            } else {
+                let transformFactor = wayBools2[i] ? scaleGap * abs(nearBorder) : -scaleGap * abs(nearBorder)
+                labels2[i].transform = CGAffineTransform(scaleX: CGFloat(1.0)+transformFactor, y: CGFloat(1)+transformFactor)
+                let alphafactor = wayBools2[i] ? (1-moyenneAlpha) * nearBorder : -(1-moyenneAlpha) * nearBorder
+                labels2[i].alpha = moyenneAlpha + alphafactor
+                if !firstTime2 {labels2[i].center = newCenter}
+            }
         }
         if firstCloud{ if firstTime { firstTime = false }}
         if !firstCloud{ if firstTime2 { firstTime2 = false }}
