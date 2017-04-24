@@ -60,7 +60,14 @@ class ViewController: UIViewController {
     
     func buttonAction(sender:UIButton!){
         print(sender.titleLabel?.text ?? "No title for button tapped")
-        splitCloud()
+        MappingWebService.getWordsMapping(word: (sender.titleLabel?.text!)!, success: { array in
+            self.words = array as! [String]
+            self.count = self.words.count
+            self.splitCloud()
+        }, failure: { error in
+            //Treat the error
+        })
+        
     }
     
     func constructPoint(inView: UIView, firstOne:Bool){
@@ -102,7 +109,7 @@ class ViewController: UIViewController {
             }
             
             //Construct the button title and target
-            label.setTitle(firstOne ? words[i] : words2[i],for: .normal)
+            label.setTitle(words[i],for: .normal) //firstOne ? words[i] : words2[i],for: .normal)
             label.setTitleColor(UIColor.black, for: .normal)
             label.addTarget(self, action: #selector(buttonAction), for: .touchUpInside)
             label.contentHorizontalAlignment = .center;
