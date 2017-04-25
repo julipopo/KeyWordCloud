@@ -60,13 +60,20 @@ class ViewController: UIViewController {
     
     func buttonAction(sender:UIButton!){
         print(sender.titleLabel?.text ?? "No title for button tapped")
-        MappingWebService.getWordsMapping(word: (sender.titleLabel?.text!)!, success: { array in
-            self.words = array as! [String]
-            self.count = self.words.count
-            self.splitCloud()
-        }, failure: { error in
-            //Treat the error
-        })
+        
+        
+        DispatchQueue.main.async {
+            self.timer.invalidate()
+            MappingWebService.getWordsMapping(word: (sender.titleLabel?.text!)!, success: { array in
+                self.words = array as! [String]
+                self.count = self.words.count
+                self.splitCloud()
+                self.timer = Timer.scheduledTimer(timeInterval: 0.02, target: self, selector: #selector(ViewController.anim), userInfo: nil, repeats: true)
+                
+            }, failure: { error in
+                //Treat the error
+            })
+        }
         
     }
     
@@ -119,18 +126,21 @@ class ViewController: UIViewController {
             firstOne ? labels.append(label) : labels2.append(label)
             inView.addSubview(label)
         }
-        
         UIView.animate(withDuration: 1, animations: {
             for i in 0..<self.count {
                 if firstOne {
                     self.labels[i].center = cgpoints[i]
+                    
                 } else {
+                    
                     self.labels2[i].center = cgpoints[i]
+                    
                 }
             }
         }, completion: { (finished) in
             print("end ")
         })
+        
     }
     
     func splitCloud(){
@@ -148,8 +158,10 @@ class ViewController: UIViewController {
             for i in 0..<self.count {
                 if !self.firstCloud {
                     self.labels[i].center = cgpoints[i]
+                    
                 } else {
                     self.labels2[i].center = cgpoints[i]
+                    
                 }
             }
         }, completion: { (finished) in
@@ -171,11 +183,11 @@ class ViewController: UIViewController {
             let distanceFromCenter = sqrt(Double(newCenter.x * newCenter.x + newCenter.y * newCenter.y))
             if distanceFromCenter >= radius{
                 if(firstCloud){
-                   wayBools[i] = !wayBools[i]
+                    wayBools[i] = !wayBools[i]
                     if wayBools[i] { self.view.bringSubview(toFront: labels[i])
                     } else { self.view.sendSubview(toBack: labels[i]) }
                 } else {
-                   wayBools2[i] = !wayBools2[i]
+                    wayBools2[i] = !wayBools2[i]
                     if wayBools2[i] { self.view.bringSubview(toFront: labels2[i])
                     } else { self.view.sendSubview(toBack: labels2[i]) }
                 }
@@ -194,13 +206,17 @@ class ViewController: UIViewController {
                 labels[i].transform = CGAffineTransform(scaleX: CGFloat(1.0)+transformFactor, y: CGFloat(1)+transformFactor)
                 let alphafactor = wayBools[i] ? (1-moyenneAlpha) * nearBorder : -(1-moyenneAlpha) * nearBorder
                 labels[i].alpha = moyenneAlpha + alphafactor
-                if !firstTime {labels[i].center = newCenter}
+                if !firstTime {
+                    self.labels[i].center = newCenter
+                }
             } else {
                 let transformFactor = wayBools2[i] ? scaleGap * abs(nearBorder) : -scaleGap * abs(nearBorder)
                 labels2[i].transform = CGAffineTransform(scaleX: CGFloat(1.0)+transformFactor, y: CGFloat(1)+transformFactor)
                 let alphafactor = wayBools2[i] ? (1-moyenneAlpha) * nearBorder : -(1-moyenneAlpha) * nearBorder
                 labels2[i].alpha = moyenneAlpha + alphafactor
-                if !firstTime2 {labels2[i].center = newCenter}
+                if !firstTime2 {
+                    self.labels2[i].center = newCenter
+                }
             }
         }
         if firstCloud{ if firstTime { firstTime = false }}
