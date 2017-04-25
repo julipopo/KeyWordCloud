@@ -61,19 +61,22 @@ class ViewController: UIViewController {
     func buttonAction(sender:UIButton!){
         print(sender.titleLabel?.text ?? "No title for button tapped")
         
+        self.timer.invalidate()
         
-        DispatchQueue.main.async {
-            self.timer.invalidate()
-            MappingWebService.getWordsMapping(word: (sender.titleLabel?.text!)!, success: { array in
+        MappingWebService.getWordsMapping(word: (sender.titleLabel?.text!)!, success: { array in
                 self.words = array as! [String]
                 self.count = self.words.count
-                self.splitCloud()
-                self.timer = Timer.scheduledTimer(timeInterval: 0.02, target: self, selector: #selector(ViewController.anim), userInfo: nil, repeats: true)
+                
+                
+                DispatchQueue.main.async {
+                    self.splitCloud()
+                    self.timer = Timer.scheduledTimer(timeInterval: 0.02, target: self, selector: #selector(ViewController.anim), userInfo: nil, repeats: true)
+                }
+                
                 
             }, failure: { error in
-                //Treat the error
-            })
-        }
+                self.timer = Timer.scheduledTimer(timeInterval: 0.02, target: self, selector: #selector(ViewController.anim), userInfo: nil, repeats: true)
+        })
         
     }
     
