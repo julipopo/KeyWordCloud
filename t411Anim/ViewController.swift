@@ -21,7 +21,7 @@ class ViewController: UIViewController {
     
     var labels2 : [UIButton] = [], wayBools2 : [Bool] = [true], randoms_1to12 : [CGFloat] = [-1.0]
     
-    let speed:CGFloat = 0.025, scaleGap: CGFloat = 0.3, moyenneAlpha:CGFloat = 0.6
+    let speed:CGFloat = 0.025, scaleGap: CGFloat = 0.3, moyenneAlpha:CGFloat = 0.6, maxCountToRestarTheDraw: Int = 40
     var firstTime = true, firstTime2 = true, firstCloud = true
     
     var timer : Timer = Timer()
@@ -60,22 +60,26 @@ class ViewController: UIViewController {
     
     func buttonAction(sender:UIButton!){
         print(sender.titleLabel?.text ?? "No title for button tapped")
-        
+        self.view.isUserInteractionEnabled = false;
         self.timer.invalidate()
         
         MappingWebService.getWordsMapping(word: (sender.titleLabel?.text!)!, success: { array in
-                self.words = array as! [String]
-                self.count = self.words.count
-                
-                
-                DispatchQueue.main.async {
-                    self.splitCloud()
-                    self.timer = Timer.scheduledTimer(timeInterval: 0.02, target: self, selector: #selector(ViewController.anim), userInfo: nil, repeats: true)
-                }
-                
-                
-            }, failure: { error in
+            self.words = array as! [String]
+            self.count = self.words.count
+            
+            
+            DispatchQueue.main.async {
+                self.splitCloud()
                 self.timer = Timer.scheduledTimer(timeInterval: 0.02, target: self, selector: #selector(ViewController.anim), userInfo: nil, repeats: true)
+                self.view.isUserInteractionEnabled = true;
+            }
+            
+            
+        }, failure: { error in
+            DispatchQueue.main.async {
+                self.timer = Timer.scheduledTimer(timeInterval: 0.02, target: self, selector: #selector(ViewController.anim), userInfo: nil, repeats: true)
+                self.view.isUserInteractionEnabled = true;
+            }
         })
         
     }
@@ -87,63 +91,67 @@ class ViewController: UIViewController {
         
         inView.bounds = CGRect(x: -kWidth/2, y: -kHeight/2, width: kWidth, height: kHeight)
         var cgpoints : [CGPoint] = [CGPoint(x : 0, y: 0)]
-        for i in 0..<count {
-            let label = UIButton()
-            
-            label.frame = CGRect(x: -sizeForLabel/2, y: -sizeForLabel/2, width: sizeForLabel, height: sizeForLabel)
-            //Place the button
-            if i != 0 {
-                let randomAngle = Double(i)*2*M_PI/Double(count)
-                var random_1to1:CGFloat = 0
-                repeat { //re-set it randomly while it doesn't conform to the minimum spacing between labels
-                    min = 2*radius
-                    random_1to1 = CGFloat(Int(arc4random_uniform(201)) - 100)/100.0
-                    randomRadius = radius*sqrt( Double(1 - random_1to1 * random_1to1))
-                    let newX = CGFloat(cos(Double(randomAngle)) * randomRadius)
-                    let newY = CGFloat(sin(Double(randomAngle)) * randomRadius)
-                    for j in 0..<i{
-                        let oldX = cgpoints[j].x
-                        let oldY = cgpoints[j].y
-                        let d1 = Double(sqrt((oldX-newX)*(oldX-newX) + (oldY-newY)*(oldY-newY)))
-                        let oldRandom = firstOne ? randoms_1to1[j] : randoms_1to12[j]
-                        let d2 = Double(abs(oldRandom-random_1to1))*radius
-                        let distance:Double = sqrt(d1*d1 + d2*d2)
-                        if distance < min { min = distance}
-                    }
-                    print("\(i) : \(min) -- minSpacing : \(spacingMinimun)")
-                    print(min < spacingMinimun)
-                } while min < spacingMinimun
-                firstOne ? randoms_1to1.append(random_1to1) : randoms_1to12.append(random_1to1)
-                cgpoints.append(CGPoint(x: cos(Double(randomAngle)) * randomRadius , y: sin(Double(randomAngle)) * randomRadius))
-                firstOne ? wayBools.append(random_1to1 < 0) : wayBools2.append(random_1to1 < 0)
+        var restart = false
+        repeat {
+            if firstOne {for view in self.labels{view.removeFromSuperview()}}
+            else {for view in self.labels2{view.removeFromSuperview()}}
+            firstOne ? labels.removeAll() : labels2.removeAll()
+            for i in 0..<count {
+                let label = UIButton()
+                
+                label.frame = CGRect(x: -sizeForLabel/2, y: -sizeForLabel/2, width: sizeForLabel, height: sizeForLabel)
+                //Place the button
+                if i != 0 {
+                    let randomAngle = Double(i)*2*M_PI/Double(count)
+                    var random_1to1:CGFloat = 0
+                    var countToRestart = 0
+                    repeat { //re-set it randomly while it doesn't conform to the minimum spacing between labels
+                        min = 2*radius
+                        random_1to1 = CGFloat(Int(arc4random_uniform(201)) - 100)/100.0
+                        randomRadius = radius*sqrt( Double(1 - random_1to1 * random_1to1))
+                        let newX = CGFloat(cos(Double(randomAngle)) * randomRadius)
+                        let newY = CGFloat(sin(Double(randomAngle)) * randomRadius)
+                        for j in 0..<i{
+                            let oldX = cgpoints[j].x
+                            let oldY = cgpoints[j].y
+                            let d1 = Double(sqrt((oldX-newX)*(oldX-newX) + (oldY-newY)*(oldY-newY)))
+                            let oldRandom = firstOne ? randoms_1to1[j] : randoms_1to12[j]
+                            let d2 = Double(abs(oldRandom-random_1to1))*radius
+                            let distance:Double = sqrt(d1*d1 + d2*d2)
+                            if distance < min { min = distance}
+                        }
+                        countToRestart += 1
+                        restart = countToRestart > maxCountToRestarTheDraw
+                        if restart {print("ONCE")}
+                    } while min < spacingMinimun && !restart
+                    firstOne ? randoms_1to1.append(random_1to1) : randoms_1to12.append(random_1to1)
+                    cgpoints.append(CGPoint(x: cos(Double(randomAngle)) * randomRadius , y: sin(Double(randomAngle)) * randomRadius))
+                    firstOne ? wayBools.append(random_1to1 < 0) : wayBools2.append(random_1to1 < 0)
+                }
+                
+                //Construct the button title and target
+                label.setTitle(words[i],for: .normal) //firstOne ? words[i] : words2[i],for: .normal)
+                label.setTitleColor(UIColor.black, for: .normal)
+                label.addTarget(self, action: #selector(buttonAction), for: .touchUpInside)
+                label.contentHorizontalAlignment = .center;
+                label.contentVerticalAlignment = .center;
+                label.titleLabel?.adjustsFontSizeToFitWidth = true
+                
+                firstOne ? labels.append(label) : labels2.append(label)
+                inView.addSubview(label)
             }
-            
-            //Construct the button title and target
-            label.setTitle(words[i],for: .normal) //firstOne ? words[i] : words2[i],for: .normal)
-            label.setTitleColor(UIColor.black, for: .normal)
-            label.addTarget(self, action: #selector(buttonAction), for: .touchUpInside)
-            label.contentHorizontalAlignment = .center;
-            label.contentVerticalAlignment = .center;
-            label.titleLabel?.adjustsFontSizeToFitWidth = true
-            
-            firstOne ? labels.append(label) : labels2.append(label)
-            inView.addSubview(label)
-        }
+        } while restart
         UIView.animate(withDuration: 1, animations: {
             for i in 0..<self.count {
                 if firstOne {
                     self.labels[i].center = cgpoints[i]
-                    
                 } else {
-                    
                     self.labels2[i].center = cgpoints[i]
-                    
                 }
             }
         }, completion: { (finished) in
             print("end ")
         })
-        
     }
     
     func splitCloud(){
@@ -152,8 +160,8 @@ class ViewController: UIViewController {
             let oldX = firstCloud ? labels[i].center.x : labels2[i].center.x
             let oldY = firstCloud ? labels[i].center.y : labels2[i].center.y
             let oldAngle = oldY < 0 ? acos(oldX/CGFloat(radius)) + CGFloat(M_PI_2) : -acos(oldX/CGFloat(radius)) + CGFloat(M_PI_2)
-            let newX : CGFloat = cos(oldAngle)*(CGFloat(radius)+250)
-            let newY : CGFloat = sin(oldAngle)*(CGFloat(radius)+250)
+            let newX : CGFloat = cos(oldAngle)*(CGFloat(radius)+kHeight/2)
+            let newY : CGFloat = sin(oldAngle)*(CGFloat(radius)+kWidth/2)
             cgpoints.append(CGPoint(x: newY, y: newX))
         }
         self.constructPoint(inView: self.view, firstOne:!firstCloud)
