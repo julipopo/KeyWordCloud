@@ -6,6 +6,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="11757"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
@@ -20,11 +21,47 @@
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="u41-1Q-o3L">
+                                <rect key="frame" x="86" y="48" width="203" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="WyO-pn-9T4">
+                                <rect key="frame" x="26" y="33.5" width="50" height="50"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="50" id="3f5-qu-LPc"/>
+                                    <constraint firstAttribute="width" constant="50" id="RxK-V9-wr9"/>
+                                </constraints>
+                                <state key="normal" title="Button" image="back-arrow"/>
+                                <connections>
+                                    <action selector="backToLastPoint:" destination="BYZ-38-t0r" eventType="touchUpInside" id="NH8-09-tnh"/>
+                                </connections>
+                            </button>
+                        </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <constraints>
+                            <constraint firstItem="WyO-pn-9T4" firstAttribute="centerY" secondItem="u41-1Q-o3L" secondAttribute="centerY" id="OVG-qL-do7"/>
+                            <constraint firstItem="WyO-pn-9T4" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="10" id="OpB-EF-zSV"/>
+                            <constraint firstItem="u41-1Q-o3L" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="28" id="hGD-ZN-Vc4"/>
+                            <constraint firstItem="u41-1Q-o3L" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="hwU-gO-JIi"/>
+                            <constraint firstItem="u41-1Q-o3L" firstAttribute="leading" secondItem="WyO-pn-9T4" secondAttribute="trailing" constant="10" id="rvq-rQ-rPx"/>
+                        </constraints>
                     </view>
+                    <connections>
+                        <outlet property="buttonBackArrow" destination="WyO-pn-9T4" id="JB6-dX-xHS"/>
+                        <outlet property="constraintButtonLeading" destination="OpB-EF-zSV" id="rG9-7c-2Wu"/>
+                        <outlet property="constraintLabelCenterX" destination="hwU-gO-JIi" id="EKM-RH-xy3"/>
+                        <outlet property="constraintLabelTop" destination="hGD-ZN-Vc4" id="v5l-mO-fax"/>
+                        <outlet property="labelSearchedWord" destination="u41-1Q-o3L" id="O7o-PF-rsf"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
         </scene>
     </scenes>
+    <resources>
+        <image name="back-arrow" width="256" height="256"/>
+    </resources>
 </document>
