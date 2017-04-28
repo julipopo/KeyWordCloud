@@ -3,7 +3,7 @@
 [![Platform](https://img.shields.io/cocoapods/p/LFAlertController.svg?style=flat)](http://cocoapods.org/pods/LFAlertController)
 [![Swift Version][swift-image]][swift-url]
 
-Animated Cloud of key words that maps with an other cloud of words mapping with the one clicked.
+Animated Cloud of key words that split into an other cloud of words mapping with the one clicked.
 
 #### ++ Work in progress for more features ++
 
