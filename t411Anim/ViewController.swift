@@ -100,7 +100,7 @@ class ViewController: UIViewController {
     }
     
     @IBAction func backToLastPoint(_ sender: Any) {
-        
+        self.buttonBackArrow.isEnabled = false
         print(labelSearchedWord.text!)
         labelSearchedWord.text = historyWord[countSearch-1]
         self.view.isUserInteractionEnabled = false;
@@ -135,7 +135,7 @@ class ViewController: UIViewController {
             label.contentVerticalAlignment = .center;
             label.titleLabel?.adjustsFontSizeToFitWidth = true
             label.alpha = lastAlpha[i]
-            label.transform.a = self.lastScale[i]
+            label.transform = CGAffineTransform(scaleX: self.lastScale[i], y: self.lastScale[i])
             firstCloud ? labels2.append(label) : labels.append(label)
             inView.addSubview(label)
         }
@@ -168,7 +168,7 @@ class ViewController: UIViewController {
             
             self.timer = Timer.scheduledTimer(timeInterval: 0.02, target: self, selector: #selector(ViewController.anim), userInfo: nil, repeats: true)
             self.view.isUserInteractionEnabled = true;
-            
+            self.buttonBackArrow.isEnabled = true
         })
         
     }
