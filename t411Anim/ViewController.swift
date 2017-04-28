@@ -102,7 +102,9 @@ class ViewController: UIViewController {
     @IBAction func backToLastPoint(_ sender: Any) {
         self.buttonBackArrow.isEnabled = false
         print(labelSearchedWord.text!)
-        labelSearchedWord.text = historyWord[countSearch-1]
+        if countSearch > 1{
+            labelSearchedWord.text = historyWord[countSearch-2]
+        }
         self.view.isUserInteractionEnabled = false;
         
         self.timer.invalidate()
@@ -139,7 +141,6 @@ class ViewController: UIViewController {
             firstCloud ? labels2.append(label) : labels.append(label)
             inView.addSubview(label)
         }
-        
         
         UIView.animate(withDuration: 1, animations: {
             for i in 0..<self.count {
