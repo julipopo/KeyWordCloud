@@ -14,7 +14,7 @@ class MappingWebService: NSObject {
     //http://swiftdeveloperblog.com/http-get-request-example-in-swift/
     
     class func getWordsMapping(word: String, success: @escaping (NSArray) -> Void, failure: @escaping (Error) -> Void) {
-        
+        print("test")
         let scriptUrl = "http://julipopo.freeboxos.fr/mappingWord/32/" + word
         let myUrl = NSURL(string: scriptUrl)
         let request = NSMutableURLRequest(url:myUrl! as URL)
